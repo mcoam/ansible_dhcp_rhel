@@ -1,0 +1,33 @@
+# ISC DHCPD configuration -- Don't edit manually!
+#
+# Global options
+#
+default-lease-time {{ dhcp_global_default_lease_time }};
+option routers {{ dhcp_router }};
+max-lease-time {{ dhcp_global_max_lease_time }};
+option domain-name  "{{ dhcp_global_domain_name }}";
+option domain-name-servers {{ dhcp_global_domain_name_servers }};
+
+
+###SUBNET NETWORK DECLARATION
+subnet {{ subnet_dhcp_network }} netmask {{ subnet_dhcp_subnet_mask }} {
+	 option routers                  {{ dhcp_router }};
+     range {{ subnet_range_start }} {{ subnet_range_end }};
+     option subnet-mask {{ subnet_dhcp_subnet_mask }};
+
+}
+
+###SUBNET HOST DECLARATION
+{% for h in hosts %}
+host {{ h.name }} {
+{%   if h.mac_address is defined %}
+  hardware ethernet {{ h.mac_address }};
+{%   endif %}
+{%   if h.ipv4_address is defined %}
+  fixed-address {{ h.ipv4_address }};
+{%   endif %}
+{%   if h.deny is defined and h.deny|bool %}
+  deny booting;
+{%   endif %}
+}
+{% endfor %}
